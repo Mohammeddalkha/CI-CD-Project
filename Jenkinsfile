@@ -15,10 +15,18 @@ pipeline {
         }
 
         stage('Stop Old Container') {
-            steps {
-                sh 'docker rm -f $(docker ps -q --filter ancestor=portfolio) || true'
+    steps {
+        script {
+            def oldContainerId = sh(script: "docker ps -q --filter ancestor=portfolio", returnStdout: true).trim()
+            if (oldContainerId) {
+                sh "docker rm -f ${oldContainerId}"
+                echo "Old container stopped: ${oldContainerId}"
+            } else {
+                echo "No running container to stop"
             }
         }
+    }
+}
 
         stage('Run New Container') {
             steps {
