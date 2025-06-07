@@ -15,22 +15,29 @@ pipeline {
         }
 
         stage('Stop Old Container') {
-    steps {
-        script {
-            def oldContainerId = sh(script: "docker ps -q --filter ancestor=portfolio", returnStdout: true).trim()
-            if (oldContainerId) {
-                sh "docker rm -f ${oldContainerId}"
-                echo "Old container stopped: ${oldContainerId}"
-            } else {
-                echo "No running container to stop"
+            steps {
+                script {
+                    def oldContainerId = sh(script: "docker ps -q --filter ancestor=portfolio", returnStdout: true).trim()
+                    if (oldContainerId) {
+                        sh "docker rm -f ${oldContainerId}"
+                        echo "Old container stopped: ${oldContainerId}"
+                    } else {
+                        echo "No running container to stop"
+                    }
+                }
             }
         }
-    }
-}
 
         stage('Run New Container') {
             steps {
-                sh 'docker run -d -p 80:80 portfolio'
+                sh 'docker run -d --rm -p 80:80 --name portfolio_container portfolio'
+
+            }
+        }
+
+        stage('Cleanup Unused Images') {
+            steps {
+                sh 'docker image prune -f'
             }
         }
     }
