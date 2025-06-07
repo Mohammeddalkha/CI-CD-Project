@@ -15,18 +15,24 @@ pipeline {
         }
 
         stage('Stop Old Container') {
-            steps {
-                script {
-                    def oldContainerId = sh(script: "docker ps -q --filter ancestor=portfolio", returnStdout: true).trim()
-                    if (oldContainerId) {
-                        sh "docker rm -f ${oldContainerId}"
-                        echo "Old container stopped: ${oldContainerId}"
-                    } else {
-                        echo "No running container to stop"
-                    }
-                }
+    steps {
+        script {
+            // Find any container using port 80
+            def oldContainerId = sh(
+                script: "docker ps -q --filter 'publish=80'",
+                returnStdout: true
+            ).trim()
+
+            if (oldContainerId) {
+                sh "docker rm -f ${oldContainerId}"
+                echo "Old container on port 80 stopped: ${oldContainerId}"
+            } else {
+                echo "No container using port 80"
             }
         }
+    }
+}
+
 
         stage('Run New Container') {
             steps {
