@@ -2,13 +2,21 @@ trigger:
 - main
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: ubuntu-latest
 
 steps:
-- task: DockerInstaller@0
-  inputs:
-    dockerVersion: 'latest'
+- checkout: self
 
 - script: |
-    docker build -t portfolio-app .
-  displayName: 'Build Docker Image'
+    git config --global user.email "ci@azuredevops.com"
+    git config --global user.name "Azure DevOps CI"
+
+    git checkout --orphan gh-pages
+    git rm -rf .
+
+    cp -r index.html style.css script.js .
+
+    git add .
+    git commit -m "Deploy to GitHub Pages"
+    git push -f https://$(GITHUB_TOKEN)@github.com/<USERNAME>/<REPO>.git gh-pages
+  displayName: "Deploy to GitHub Pages"
